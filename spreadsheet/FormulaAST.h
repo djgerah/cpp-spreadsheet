@@ -1,48 +1,47 @@
 #pragma once
 
-#include "FormulaLexer.h"
 #include "common.h"
+#include "FormulaLexer.h"
 
 #include <forward_list>
 #include <functional>
+#include <memory>
 #include <stdexcept>
 
-namespace ASTImpl {
-class Expr;
+namespace ASTImpl 
+{
+    class Expr;
 }
 
-class ParsingError : public std::runtime_error {
+class ParsingError : public std::runtime_error 
+{
     using std::runtime_error::runtime_error;
 };
 
-class FormulaAST {
-public:
-    explicit FormulaAST(std::unique_ptr<ASTImpl::Expr> root_expr,
-                        std::forward_list<Position> cells);
-    FormulaAST(FormulaAST&&) = default;
-    FormulaAST& operator=(FormulaAST&&) = default;
-    ~FormulaAST();
+// добавьте нужные аргументы
+using SheetArgs = std::function<double(Position)>;
 
-    double Execute(/*добавьте нужные аргументы*/ args) const;
-    void PrintCells(std::ostream& out) const;
-    void Print(std::ostream& out) const;
-    void PrintFormula(std::ostream& out) const;
+class FormulaAST 
+{
+    public:
 
-    std::forward_list<Position>& GetCells() {
-        return cells_;
-    }
+        explicit FormulaAST(std::unique_ptr<ASTImpl::Expr> root_expr, std::forward_list<Position> cells);
+        FormulaAST(FormulaAST&&) = default;
+        FormulaAST& operator=(FormulaAST&&) = default;
+        ~FormulaAST();
 
-    const std::forward_list<Position>& GetCells() const {
-        return cells_;
-    }
+        double Execute(/*добавьте нужные аргументы*/ const SheetArgs& args) const;
+        void PrintCells(std::ostream& out) const;
+        void Print(std::ostream& out) const;
+        void PrintFormula(std::ostream& out) const;
 
-private:
-    std::unique_ptr<ASTImpl::Expr> root_expr_;
+        std::forward_list<Position>& GetCells();
+        const std::forward_list<Position>& GetCells() const;
 
-    // physically stores cells so that they can be
-    // efficiently traversed without going through
-    // the whole AST
-    std::forward_list<Position> cells_;
+    private:
+
+        std::unique_ptr<ASTImpl::Expr> root_expr_;
+        std::forward_list<Position> cells_;
 };
 
 FormulaAST ParseFormulaAST(std::istream& in);
