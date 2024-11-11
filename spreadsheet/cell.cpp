@@ -15,38 +15,42 @@ Cell::Cell(SheetInterface& sheet)
 Cell::~Cell() {}
 
 void Cell::Set(std::string text) 
-{
+{   
     // Сохраняем старый текст для отката в случае ошибки
     std::string old_text = this->GetText();
 
-    if (text.empty()) 
+    // Если значение text отличается от установленного в ячейке ранее
+    if (text != old_text)
     {
-        // Если текст пустой, устанавливаем пустую реализацию
-        impl_ = std::make_unique<EmptyImpl>();
-    }
+        if (text.empty()) 
+        {
+            // Если текст пустой, устанавливаем пустую реализацию
+            impl_ = std::make_unique<EmptyImpl>();
+        }
 
-    else if (text.size() > 1 && text[0] == FORMULA_SIGN)
-    { 
-        // Если текст начинается с символа формулы, создаем реализацию формулы
-        impl_ = std::make_unique<FormulaImpl>(std::move(text), sheet_);
-    }
+        else if (text.size() > 1 && text[0] == FORMULA_SIGN)
+        { 
+            // Если текст начинается с символа формулы, создаем реализацию формулы
+            impl_ = std::make_unique<FormulaImpl>(std::move(text), sheet_);
+        }
 
-    else 
-    {
-        // В противном случае создаем реализацию текста
-        impl_ = std::make_unique<TextImpl>(std::move(text));
-    }
+        else 
+        {
+            // В противном случае создаем реализацию текста
+            impl_ = std::make_unique<TextImpl>(std::move(text));
+        }
 
-    if (IsCircularDependency(*impl_)) 
-    {
-        // В случае циклической зависимости возвращаем старый текст
-        this->Set(std::move(old_text));
+        if (IsCircularDependency(*impl_)) 
+        {
+            // В случае циклической зависимости возвращаем старый текст
+            this->Set(std::move(old_text));
 
-        throw CircularDependencyException("Circular Dependency");
+            throw CircularDependencyException("Circular Dependency");
+        }
+        
+        UpdateDependence();
+        InvalidateCache();
     }
-    
-    UpdateDependence();
-    InvalidateCache();
 }
 
 // Проверяет наличие циклической зависимости в ячейках
@@ -146,7 +150,9 @@ void Cell::InvalidateCache()
 // Очищает содержимое ячейки
 void Cell::Clear() 
 {
-    impl_ = std::make_unique<EmptyImpl>();
+    // impl_ = std::make_unique<EmptyImpl>();
+    // Для очистки используем Cell::Set("ПУСТАЯ СТРОКА")
+    Set(EMPTY);
 }
 
 // Возвращает значение текущей ячейки

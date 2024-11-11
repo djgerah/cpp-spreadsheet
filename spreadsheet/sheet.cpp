@@ -14,38 +14,31 @@ Sheet::~Sheet() {}
 // Устанавливает содержимое ячейки
 void Sheet::SetCell(Position pos, std::string text) 
 {
-    if (!pos.IsValid())
+    if (IsPosValid(pos))
     {
-        throw InvalidPositionException("Invalid position");
+        cells_.resize(std::max(pos.row + 1, static_cast<int>(cells_.size())));
+        cells_[pos.row].resize(std::max(pos.col + 1, static_cast<int>(cells_[pos.row].size())));
+        
+        if (cells_[pos.row][pos.col].get() == nullptr)
+        {
+            cells_[pos.row][pos.col] = std::make_unique<Cell>(*this);
+        }
+        
+        cells_[pos.row][pos.col]->Set(std::move(text));
     }
-
-    cells_.resize(std::max(pos.row + 1, static_cast<int>(cells_.size())));
-    cells_[pos.row].resize(std::max(pos.col + 1, static_cast<int>(cells_[pos.row].size())));
-    
-    if (cells_[pos.row][pos.col].get() == nullptr)
-    {
-        cells_[pos.row][pos.col] = std::make_unique<Cell>(*this);
-    }
-    
-    cells_[pos.row][pos.col]->Set(std::move(text)); 
 }
 
 // Универсальный геттер для константного и неконстантного GetCell()
 const Cell* Sheet::CellGetter(Position pos) const 
 {
-    if (!pos.IsValid()) 
-    {
-        throw InvalidPositionException("Invalid position");
-    } 
-
-    if (IsCellValid(pos.row, pos.col)) 
+    if (IsPosValid(pos) && IsCellValid(pos.row, pos.col)) 
     {    
         if (cells_[pos.row][pos.col]) 
         {
             return cells_[pos.row][pos.col].get();
         }
     }
-    
+
     return nullptr;
 }
 
@@ -64,12 +57,7 @@ const Cell* Sheet::GetCell(Position pos) const
 // Очищает содержимое ячейки
 void Sheet::ClearCell(Position pos) 
 {    
-    if (!pos.IsValid()) 
-    {    
-        throw InvalidPositionException("Invalid position");
-    }
-
-    if (IsCellValid(pos.row, pos.col)) 
+    if (IsPosValid(pos) && IsCellValid(pos.row, pos.col)) 
     {    
         if (cells_[pos.row][pos.col]) 
         {
@@ -81,6 +69,17 @@ void Sheet::ClearCell(Position pos)
             }
         }
     }
+}
+
+// Проверяет валидность позиции
+bool Sheet::IsPosValid(Position pos) const
+{
+    if (!pos.IsValid())
+    {
+        throw InvalidPositionException("Invalid position");
+    }
+
+    return true;
 }
 
 // Проверяет валидность ячейки

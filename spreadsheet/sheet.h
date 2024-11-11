@@ -15,6 +15,7 @@ class Sheet : public SheetInterface
         const Cell* GetCell(Position pos) const override;
         Cell* GetCell(Position pos) override;
         void ClearCell(Position pos) override;
+        bool IsPosValid(Position pos) const;
         bool IsCellValid(int row, int col) const;
         Size GetPrintableSize() const override;
     

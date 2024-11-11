@@ -75,7 +75,7 @@ namespace ASTImpl
             virtual ~Expr() = default;
             virtual void Print(std::ostream& out) const = 0;
             virtual void DoPrintFormula(std::ostream& out, ExprPrecedence precedence) const = 0;
-            virtual double Evaluate(/*добавьте сюда нужные аргументы*/ const SheetArgs& args) const = 0;
+            virtual double Evaluate(const SheetArgs& args) const = 0;
 
             // higher is tighter
             virtual ExprPrecedence GetPrecedence() const = 0;
@@ -161,7 +161,7 @@ namespace ASTImpl
                     }
                 }
 
-                double Evaluate(/*добавьте нужные аргументы*/ const SheetArgs& args) const override 
+                double Evaluate(const SheetArgs& args) const override 
                 {
                     // Скопируйте ваше решение из предыдущих уроков
                     double val = 0.0;
@@ -236,7 +236,7 @@ namespace ASTImpl
                 }
 
                 // Реализуйте метод Evaluate() для унарных операций.
-                double Evaluate(/*добавьте нужные аргументы*/ const SheetArgs& args) const override 
+                double Evaluate(const SheetArgs& args) const override 
                 {
                     // Скопируйте ваше решение из предыдущих уроков
                     switch (type_) 
@@ -279,7 +279,7 @@ namespace ASTImpl
                 }
 
                 // Для чисел метод возвращает значение числа
-                double Evaluate(/*добавьте нужные аргументы*/ const SheetArgs& args) const override 
+                double Evaluate(const SheetArgs& args) const override 
                 {
                     return value_;
                 }
@@ -320,7 +320,7 @@ namespace ASTImpl
                     return EP_ATOM;
                 }
 
-                double Evaluate(/*добавьте нужные аргументы*/ const SheetArgs& args) const override 
+                double Evaluate(const SheetArgs& args) const override 
                 {
                     return args(*cell_);
                 }
@@ -532,9 +532,9 @@ const std::forward_list<Position>& FormulaAST::GetCells() const
     return cells_;
 }
 
-double FormulaAST::Execute(/*добавьте нужные аргументы*/ const SheetArgs& args) const 
+double FormulaAST::Execute(const SheetArgs& args) const 
 {
-    return root_expr_->Evaluate(/*добавьте нужные аргументы*/ args);
+    return root_expr_->Evaluate(args);
 }
 
 FormulaAST::FormulaAST(std::unique_ptr<ASTImpl::Expr> root_expr, std::forward_list<Position> cells) 
