@@ -20,37 +20,39 @@ void Cell::Set(std::string text)
     std::string old_text = this->GetText();
 
     // Если значение text отличается от установленного в ячейке ранее
-    if (text != old_text)
+    if (text == old_text)
     {
-        if (text.empty()) 
-        {
-            // Если текст пустой, устанавливаем пустую реализацию
-            impl_ = std::make_unique<EmptyImpl>();
-        }
-
-        else if (text.size() > 1 && text[0] == FORMULA_SIGN)
-        { 
-            // Если текст начинается с символа формулы, создаем реализацию формулы
-            impl_ = std::make_unique<FormulaImpl>(std::move(text), sheet_);
-        }
-
-        else 
-        {
-            // В противном случае создаем реализацию текста
-            impl_ = std::make_unique<TextImpl>(std::move(text));
-        }
-
-        if (IsCircularDependency(*impl_)) 
-        {
-            // В случае циклической зависимости возвращаем старый текст
-            this->Set(std::move(old_text));
-
-            throw CircularDependencyException("Circular Dependency");
-        }
-        
-        UpdateDependence();
-        InvalidateCache();
+        return;
     }
+
+    if (text.empty()) 
+    {
+        // Если текст пустой, устанавливаем пустую реализацию
+        impl_ = std::make_unique<EmptyImpl>();
+    }
+
+    else if (text.size() > 1 && text[0] == FORMULA_SIGN)
+    { 
+        // Если текст начинается с символа формулы, создаем реализацию формулы
+        impl_ = std::make_unique<FormulaImpl>(std::move(text), sheet_);
+    }
+
+    else 
+    {
+        // В противном случае создаем реализацию текста
+        impl_ = std::make_unique<TextImpl>(std::move(text));
+    }
+
+    if (IsCircularDependency(*impl_)) 
+    {
+        // В случае циклической зависимости возвращаем старый текст
+        this->Set(std::move(old_text));
+
+        throw CircularDependencyException("Circular Dependency");
+    }
+    
+    UpdateDependence();
+    InvalidateCache();
 }
 
 // Проверяет наличие циклической зависимости в ячейках

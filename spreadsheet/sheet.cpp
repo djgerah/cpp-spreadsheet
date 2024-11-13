@@ -14,18 +14,20 @@ Sheet::~Sheet() {}
 // Устанавливает содержимое ячейки
 void Sheet::SetCell(Position pos, std::string text) 
 {
-    if (IsPosValid(pos))
+    if (!IsPosValid(pos))
     {
-        cells_.resize(std::max(pos.row + 1, static_cast<int>(cells_.size())));
-        cells_[pos.row].resize(std::max(pos.col + 1, static_cast<int>(cells_[pos.row].size())));
-        
-        if (cells_[pos.row][pos.col].get() == nullptr)
-        {
-            cells_[pos.row][pos.col] = std::make_unique<Cell>(*this);
-        }
-        
-        cells_[pos.row][pos.col]->Set(std::move(text));
+        return;
     }
+    
+    cells_.resize(std::max(pos.row + 1, static_cast<int>(cells_.size())));
+    cells_[pos.row].resize(std::max(pos.col + 1, static_cast<int>(cells_[pos.row].size())));
+    
+    if (cells_[pos.row][pos.col].get() == nullptr)
+    {
+        cells_[pos.row][pos.col] = std::make_unique<Cell>(*this);
+    }
+    
+    cells_[pos.row][pos.col]->Set(std::move(text));
 }
 
 // Универсальный геттер для константного и неконстантного GetCell()
